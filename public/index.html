@@ -4,14 +4,21 @@
 
 
 <script class="tmpl-type" type="text/html">
-  <div class="media-type mashmc-list-item">
-    <h2 class="media-type-title">{{name}}</h2>
-  </div>
+  <a href="/library/{{name}}">
+    <div class="media-type mashmc-list-item">
+      <h2 class="media-type-title">
+        {{name}}
+      </h2>
+    </div>
+  </a>
 </script>
 
 <script class="tmpl-media" type="text/html">
   <div class="media-item mashmc-list-item">
-    <h2 class="media-item-title">{{title}}</h2>
+    <h2 class="media-item-title">
+      {{title}}
+      {{#if year}}({{year}}){{/if}}
+    </h2>
     <p class="media-item-filepath">{{filepath}}</p>
   </div>
 </script>
