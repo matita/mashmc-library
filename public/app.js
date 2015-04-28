@@ -37,7 +37,7 @@ module.exports = function(app) {
     $media.html('loading movies');
     me.api.get('.json', { filter: JSON.stringify({ type: 'video', series: { $exists: false } }) }, function(response) {
       var items = response;
-      $media.html(['<a href="' + app.url + '"><div class="mashmc-list-item"><h2>.. back</h2></div></a>'].concat(items.map(function(item) {
+      $media.html(['<a href="' + app.url + '"><div class="mashmc-list-item"><h2>&lt;&ndash; Movies</h2></div></a>'].concat(items.map(function(item) {
         return $(me.tmpl.media(item)).data(item);
       })));
     });
@@ -53,7 +53,7 @@ module.exports = function(app) {
         if (series.indexOf(item.series) == -1)
           series.push(item.series);
       });
-      $media.html(['<a href="' + app.url + '"><div class="mashmc-list-item"><h2>.. back</h2></div></a>'].concat(series.map(function(name) {
+      $media.html(['<a href="' + app.url + '"><div class="mashmc-list-item"><h2>&lt;&ndash; Series</h2></div></a>'].concat(series.map(function(name) {
         var item = { name: name, slug: encodeURIComponent(name) };
         return $(me.tmpl.series(item)).data(item);
       })));
@@ -67,7 +67,7 @@ module.exports = function(app) {
       var items = response.filter(function(episode) {
         return episode.series == showName;
       });
-      $media.html(['<a href="' + app.url + '/series"><div class="mashmc-list-item"><h2>.. back</h2></div></a>'].concat(items.map(function(item) {
+      $media.html(['<a href="' + app.url + '/series"><div class="mashmc-list-item"><h2>&lt;&ndash; Episodes</h2></div></a>'].concat(items.map(function(item) {
         return $(me.tmpl.media(item)).data(item);
       })));
     }); 
