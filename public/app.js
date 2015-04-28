@@ -4,32 +4,74 @@ module.exports = function(app) {
   var types = [
     {
       name: 'movies',
-      filter: {
-        type: 'video',
-        series: {
-          $exists: false
-        }
-      }
+      url: 'movies'
     }, {
       name: 'series',
-      filter: {
-        type: 'video',
-        series: {
-          $exists: true
-        }
-      }
+      url: 'series'
     }
   ];
 
 
-  me.route = function(mediaType) {
+  me.route = function(mediaType, id) {
+    console.log('route', arguments);
     if (!mediaType)
       return viewTypes();
-    var type = types.filter(function(type) { return type.name == mediaType; })[0];
-    if (type)
-      viewMedia(type.filter, mediaType);
+    switch(mediaType) {
+      case 'movies':
+        viewMovies();
+        break;
+      case 'series':
+        if (id)
+          viewEpisodes(id);
+        else
+          viewShows();
+        break;
+      default:
+        viewTypes();
+        break;
+    }
   }
 
+
+  function viewMovies() {
+    $media.html('loading movies');
+    me.api.get('.json', { filter: JSON.stringify({ type: 'video', series: { $exists: false } }) }, function(response) {
+      var items = response;
+      $media.html(['<a href="' + app.url + '"><div class="mashmc-list-item"><h2>.. back</h2></div></a>'].concat(items.map(function(item) {
+        return $(me.tmpl.media(item)).data(item);
+      })));
+    });
+  }
+
+
+  function viewShows() {
+    $media.html('loading series');
+    me.api.get('.json', { filter: JSON.stringify({ type: 'video', series: { $exists: true } }) }, function(response) {
+      var items = response;
+      var series = [];
+      items.forEach(function(item) {
+        if (series.indexOf(item.series) == -1)
+          series.push(item.series);
+      });
+      $media.html(['<a href="' + app.url + '"><div class="mashmc-list-item"><h2>.. back</h2></div></a>'].concat(series.map(function(name) {
+        var item = { name: name, slug: encodeURIComponent(name) };
+        return $(me.tmpl.series(item)).data(item);
+      })));
+    }); 
+  }
+
+  function viewEpisodes(showId) {
+    var showName = decodeURIComponent(showId);
+    $media.html('loading episodes');
+    me.api.get('.json', { filter: JSON.stringify({ type: 'video', series: { $exists: true } }) }, function(response) {
+      var items = response.filter(function(episode) {
+        return episode.series == showName;
+      });
+      $media.html(['<a href="' + app.url + '/series"><div class="mashmc-list-item"><h2>.. back</h2></div></a>'].concat(items.map(function(item) {
+        return $(me.tmpl.media(item)).data(item);
+      })));
+    }); 
+  }
 
 
   function viewTypes() {
@@ -41,7 +83,22 @@ module.exports = function(app) {
   function viewMedia(filters, type) {
     $media.html('loading media');
     me.api.get('.json', { filter: JSON.stringify(filters) }, function(response) {
-      me.$root.find('.media').html(['<a href="' + app.url + '"><div class="mashmc-list-item"><h2>.. back</h2></div></a>'].concat(response.map(function(item) {
+      var items = response;
+      
+      if (type == 'series') {
+        var shows = [];
+        items.forEach(function(item) {
+          var showName = item.series;
+          if (shows.indexOf(showName) !== -1)
+            return;
+          shows.push(showName);
+        });
+        items = shows.map(function(showName) {
+          return { name: showName };
+        });
+      }
+      
+      $media.html(['<a href="' + app.url + '"><div class="mashmc-list-item"><h2>.. back</h2></div></a>'].concat(items.map(function(item) {
         return $(me.tmpl.media(item)).data(item);
       })));
     });
@@ -50,11 +107,7 @@ module.exports = function(app) {
   
 
   $media
-    /*.on('click', '.media-type', function() {
-      var type = $(this).data();
-      viewMedia(type.filter);
-    })*/
-    .on('click', '.mashmc-list-item', function() {
+    .on('click', '.media-item', function() {
       console.log($(this).data());
     });
 }
